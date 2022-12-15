@@ -18,6 +18,8 @@ async function searchImages(query, page = 1) {
   return data;
 }
 
-export default {
+const api = {
   searchImages,
 };
+
+export default api;

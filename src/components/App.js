@@ -10,6 +10,7 @@ class App extends Component {
   state = {
     showModal: false,
     loading: false,
+    query: '',
   };
 
   render() {
@@ -19,7 +20,7 @@ class App extends Component {
       <Layout>
         <Searchbar />
 
-        <ImageGallery />
+        <ImageGallery query={this.state.query} />
 
         {loading && (
           <MagnifyingGlass
