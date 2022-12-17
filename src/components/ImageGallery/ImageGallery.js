@@ -77,10 +77,7 @@ class ImageGallery extends Component {
     this.setState({ loadMorePending: true });
 
     try {
-      const { hits: gallery, totalHits: total } = await pixabayAPI.searchImages(
-        query,
-        nextPage
-      );
+      const { hits: gallery } = await pixabayAPI.searchImages(query, nextPage);
 
       this.setState({
         gallery: [...prevGallery, ...gallery],
