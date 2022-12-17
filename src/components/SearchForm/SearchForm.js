@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { toast } from 'react-toastify';
 import { Form, Button, ButtonLabel, Input } from './SearchForm.styled';
 
 class SearchForm extends Component {
@@ -9,10 +10,15 @@ class SearchForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    const normilizedQuery = this.state.query.trim();
+    const { query } = this.state;
+    const normilizedQuery = query.trim();
 
     this.props.onSubmit(normilizedQuery);
     this.setState({ query: normilizedQuery });
+
+    if (!normilizedQuery) {
+      toast.warning('Please, enter your search query.');
+    }
   };
 
   handleInputChange = e => {
