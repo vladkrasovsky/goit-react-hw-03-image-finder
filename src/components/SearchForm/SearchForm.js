@@ -1,8 +1,13 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { Form, Button, ButtonLabel, Input } from './SearchForm.styled';
 
 class SearchForm extends Component {
+  static propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+  };
+
   state = {
     query: '',
   };
@@ -21,12 +26,13 @@ class SearchForm extends Component {
     }
   };
 
-  handleInputChange = e => {
-    const { name, value } = e.currentTarget;
+  handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
   };
 
   render() {
+    const { query } = this.state;
+
     return (
       <Form onSubmit={this.handleSubmit}>
         <Button type="submit">
@@ -39,7 +45,7 @@ class SearchForm extends Component {
           autoFocus
           placeholder="Search images and photos"
           name="query"
-          value={this.state.query}
+          value={query}
           onChange={this.handleInputChange}
         />
       </Form>
