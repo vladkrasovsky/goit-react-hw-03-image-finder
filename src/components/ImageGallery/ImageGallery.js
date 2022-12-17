@@ -29,12 +29,15 @@ class ImageGallery extends Component {
     const nextPage = this.state.page;
 
     if (prevQuery !== nextQuery) {
-      this.setState({ gallery: [], totalPages: 0, status: 'idle' });
+      this.setState({ gallery: [], totalPages: 0 });
 
       if (nextQuery) {
         this.setState({ status: 'pending' });
         this.fetchImages(nextQuery);
+        return;
       }
+
+      this.setState({ status: 'idle' });
     }
 
     if (prevPage !== nextPage) {
