@@ -1,46 +1,34 @@
 import { Component } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Layout } from './Layout';
 import { GlobalStyle } from './GlobalStyle';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
-import Modal from './Modal';
-import { MagnifyingGlass } from 'react-loader-spinner';
 
 class App extends Component {
   state = {
     showModal: false,
-    loading: false,
     query: '',
   };
 
+  handleSearchBarSubmit = query => {
+    if (!query) {
+      toast.warning('Please, enter your search query.');
+    }
+    this.setState({ query });
+  };
+
   render() {
-    const { showModal, loading } = this.state;
+    const { query } = this.state;
 
     return (
       <Layout>
-        <Searchbar />
+        <Searchbar onSubmit={this.handleSearchBarSubmit} />
 
-        <ImageGallery query={this.state.query} />
+        <ImageGallery query={query} />
 
-        {loading && (
-          <MagnifyingGlass
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="MagnifyingGlass-loading"
-            wrapperStyle={{}}
-            wrapperClass="MagnifyingGlass-wrapper"
-            glassColor="#c0efff"
-            color="#e15b64"
-          />
-        )}
-
-        {showModal && (
-          <Modal>
-            <img src="" alt="" />
-          </Modal>
-        )}
-
+        <ToastContainer theme="colored" autoClose={3000} />
         <GlobalStyle />
       </Layout>
     );

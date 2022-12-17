@@ -1,10 +1,10 @@
 import SearchForm from 'components/SearchForm';
 import { Header } from './Searchbar.styled';
 
-const Searchbar = () => {
+const Searchbar = ({ onSubmit }) => {
   return (
-    <Header>
-      <SearchForm />
+    <Header className="header">
+      <SearchForm onSubmit={onSubmit} />
     </Header>
   );
 };

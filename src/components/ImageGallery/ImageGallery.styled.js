@@ -12,3 +12,7 @@ export const List = styled.ul`
   margin-left: auto;
   margin-right: auto;
 `;
+
+export const BtnWrap = styled.div`
+  text-align: center;
+`;

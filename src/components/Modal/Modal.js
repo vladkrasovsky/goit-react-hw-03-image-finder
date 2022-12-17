@@ -3,9 +3,15 @@ import { Overlay, Box } from './Modal.styled';
 
 const ModalRoot = document.querySelector('#modal-root');
 
-const Modal = ({ children }) => {
+const Modal = ({ onClose, children }) => {
+  const handleOverlayClick = ({ target, currentTarget }) => {
+    if (target === currentTarget) {
+      onClose();
+    }
+  };
+
   return createPortal(
-    <Overlay>
+    <Overlay onClick={handleOverlayClick}>
       <Box>{children}</Box>
     </Overlay>,
     ModalRoot
