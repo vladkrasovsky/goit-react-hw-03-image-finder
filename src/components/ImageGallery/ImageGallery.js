@@ -1,24 +1,28 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import pixabayAPI from 'services/pixabay-api';
 import { List, BtnWrap } from './ImageGallery.styled';
 import ImageGalleryItem from 'components/ImageGalleryItem';
-import pixabayAPI from 'services/pixabay-api';
-import { Oval } from 'react-loader-spinner';
-import { toast } from 'react-toastify';
 import Button from 'components/Button';
 import Modal from 'components/Modal';
+import Loader from 'components/Loader';
 
 class ImageGallery extends Component {
+  static propTypes = {
+    query: PropTypes.string.isRequired,
+  };
+
   state = {
-    gallery: null,
+    gallery: [],
     page: 1,
     totalPages: 0,
-    error: null,
     status: 'idle',
     loadMorePending: false,
     activeImage: null,
   };
 
-  async componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevProps.query;
     const nextQuery = this.props.query;
     const prevPage = prevState.page;
@@ -26,141 +30,85 @@ class ImageGallery extends Component {
 
     if (prevQuery !== nextQuery) {
       if (!nextQuery) {
-        this.setState({ gallery: null, status: 'idle' });
+        this.setState({ gallery: [], status: 'idle' });
         return;
       }
 
       this.setState({ status: 'pending' });
-
-      try {
-        const { hits: gallery, totalHits: total } =
-          await pixabayAPI.searchImages(nextQuery, 1);
-
-        this.setState({
-          gallery,
-          page: 1,
-          status: 'resolved',
-        });
-
-        this.calculateTotalPages(total);
-
-        if (!gallery.length) {
-          toast.info('Oooh oh, there are no results that match your query.');
-          return;
-        }
-
-        toast.info(`Hooray! We found ${total} image(s).`);
-      } catch (error) {
-        this.setState({ error, status: 'rejected' });
-        toast.error(error.message);
-      }
+      this.fetchImages(nextQuery);
     }
 
     if (prevPage !== nextPage) {
-      this.scrollToLoadedGalleryItems();
+      this.scrollToLoadedItems();
     }
+  }
+
+  async fetchImages(query, page = 1) {
+    try {
+      const { hits, totalHits } = await pixabayAPI.searchImages(query, page);
+
+      this.setState(({ gallery }) => ({
+        gallery: [...gallery, ...hits],
+        status: 'resolved',
+        page,
+        loadMorePending: false,
+      }));
+
+      if (page === 1) {
+        if (!hits.length) {
+          toast.info('Oooh oh, there are no results that match your query.');
+          return;
+        }
+        toast.info(`Hooray! We found ${totalHits} image(s).`);
+        this.calculateTotalPages(totalHits);
+      }
+    } catch (error) {
+      this.setState({ status: 'rejected' });
+      toast.error(error.message);
+    }
+  }
+
+  async handleLoadMore() {
+    this.setState({ loadMorePending: true });
+    this.fetchImages(this.props.query, this.state.page + 1);
   }
 
   calculateTotalPages(total) {
     this.setState({ totalPages: Math.ceil(total / 12) });
   }
 
-  isShowLoadMore() {
-    return this.state.page < this.state.totalPages;
-  }
-
-  async handleLoadMore() {
-    const { query } = this.props;
-    const { page, gallery: prevGallery } = this.state;
-    const nextPage = page + 1;
-
-    this.setState({ loadMorePending: true });
-
-    try {
-      const { hits: gallery } = await pixabayAPI.searchImages(query, nextPage);
-
-      this.setState({
-        gallery: [...prevGallery, ...gallery],
-        status: 'resolved',
-        page: nextPage,
-        loadMorePending: false,
-      });
-    } catch (error) {
-      this.setState({ error, status: 'rejected' });
-      toast.error(error.message);
-    }
-  }
-
-  scrollToLoadedGalleryItems() {
-    const gallery = document.querySelector('.gallery');
-    const galleryItems = gallery.querySelectorAll('li');
-    const gapOffset = parseInt(getComputedStyle(gallery).gap);
-    const headerHeight = document
-      .querySelector('.header')
-      .getBoundingClientRect().height;
-
-    const elementIdx = galleryItems.length - (galleryItems.length % 12 || 12);
-
-    const { top } = galleryItems[elementIdx].getBoundingClientRect();
-
-    const scrollOptions = {
-      top: top + window.pageYOffset - headerHeight - gapOffset,
-      behavior: 'smooth',
+  scrollToLoadedItems() {
+    const refs = {
+      header: document.querySelector('.header'),
+      wrapper: document.querySelector('.gallery'),
     };
 
-    window.scrollTo(scrollOptions);
+    refs.items = refs.wrapper.querySelectorAll('li');
+
+    const itemsLength = refs.items.length;
+    const itemIdx = itemsLength - (itemsLength % 12 || 12);
+    const headerHeight = refs.header.getBoundingClientRect().height;
+    const gapOffset = parseInt(getComputedStyle(refs.wrapper).gap);
+
+    const top =
+      refs.items[itemIdx].getBoundingClientRect().top +
+      window.pageYOffset -
+      headerHeight -
+      gapOffset;
+
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 
-  showLoader() {
-    return (
-      <Oval
-        height={60}
-        width={60}
-        color="#3f51b5"
-        wrapperStyle={{ display: 'inline-block', textAlign: 'center' }}
-        wrapperClass=""
-        visible={true}
-        ariaLabel="oval-loading"
-        secondaryColor="#3f51b5"
-        strokeWidth={2}
-        strokeWidthSecondary={2}
-      />
-    );
-  }
-
-  showLoadMore() {
-    const { loadMorePending } = this.state;
-
-    if (loadMorePending) {
-      return this.showLoader();
-    }
-
-    if (this.isShowLoadMore()) {
-      return (
-        <BtnWrap>
-          <Button onClick={() => this.handleLoadMore()}>Load More</Button>
-        </BtnWrap>
-      );
-    }
-  }
-
-  showModal() {
-    const { activeImage } = this.state;
-
-    if (activeImage) {
-      const { href: src, title: alt } = activeImage;
-      return (
-        <Modal onClose={this.hideModal}>
-          <img src={src} alt={alt} />
-        </Modal>
-      );
-    }
-  }
+  handleItemClick = e => {
+    e.preventDefault();
+    this.toggleDocumentScroll('hidden');
+    this.setState({ activeImage: e.currentTarget });
+    window.addEventListener('keydown', this.handleEscModalClose);
+  };
 
   hideModal = () => {
     this.setState({ activeImage: null });
-
-    document.querySelector('html').style.overflowY = 'auto';
+    this.toggleDocumentScroll('auto');
   };
 
   handleEscModalClose = e => {
@@ -170,21 +118,23 @@ class ImageGallery extends Component {
     }
   };
 
-  handleGalleryItemClick = e => {
-    e.preventDefault();
+  toggleDocumentScroll(value) {
+    document.querySelector('html').style.overflowY = value;
+  }
 
-    document.querySelector('html').style.overflowY = 'hidden';
+  render() {
+    const { status } = this.state;
 
-    const { href, title } = e.currentTarget;
+    if (status === 'pending') {
+      return <Loader />;
+    }
 
-    this.setState({
-      activeImage: { href, title },
-    });
+    if (status === 'resolved') {
+      return this.renderGallery();
+    }
+  }
 
-    window.addEventListener('keydown', this.handleEscModalClose);
-  };
-
-  showGallery() {
+  renderGallery() {
     const { gallery } = this.state;
 
     return (
@@ -194,28 +144,43 @@ class ImageGallery extends Component {
             <ImageGalleryItem
               key={item.id}
               img={item}
-              onClick={this.handleGalleryItemClick}
+              onClick={this.handleItemClick}
             />
           ))}
         </List>
 
-        {this.showLoadMore()}
+        {this.renderLoadMore()}
 
-        {this.showModal()}
+        {this.renderModal()}
       </>
     );
   }
 
-  render() {
-    const { status } = this.state;
+  renderLoadMore() {
+    const { page, totalPages, loadMorePending } = this.state;
 
-    if (status === 'pending') {
-      return this.showLoader();
-    }
+    if (loadMorePending) return <Loader />;
 
-    if (status === 'resolved') {
-      return this.showGallery();
+    if (page < totalPages) {
+      return (
+        <BtnWrap>
+          <Button onClick={() => this.handleLoadMore()}>Load More</Button>
+        </BtnWrap>
+      );
     }
+  }
+
+  renderModal() {
+    const { activeImage } = this.state;
+
+    if (!activeImage) return;
+
+    const { href, title } = activeImage;
+    return (
+      <Modal onClose={this.hideModal}>
+        <img src={href} alt={title} />
+      </Modal>
+    );
   }
 }
 

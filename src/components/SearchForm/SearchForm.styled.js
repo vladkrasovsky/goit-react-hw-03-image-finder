@@ -45,8 +45,10 @@ export const ButtonLabel = styled.span`
 export const Input = styled.input`
   display: inline-block;
   width: 100%;
+  height: 48px;
   font: inherit;
   font-size: 20px;
+  box-shadow: inset 0 0 50px 50px #ffffff;
   border: none;
   outline: none;
   padding-left: 4px;

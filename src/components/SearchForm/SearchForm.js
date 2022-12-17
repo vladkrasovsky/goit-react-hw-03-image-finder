@@ -41,7 +41,7 @@ class SearchForm extends Component {
 
         <Input
           type="text"
-          autocomplete="off"
+          autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
           name="query"
