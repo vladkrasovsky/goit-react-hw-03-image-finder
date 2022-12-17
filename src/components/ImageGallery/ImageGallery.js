@@ -34,7 +34,7 @@ class ImageGallery extends Component {
         return;
       }
 
-      this.setState({ status: 'pending' });
+      this.setState({ gallery: [], status: 'pending' });
       this.fetchImages(nextQuery);
     }
 
