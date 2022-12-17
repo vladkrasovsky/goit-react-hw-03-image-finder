@@ -29,7 +29,7 @@ class ImageGallery extends Component {
     const nextPage = this.state.page;
 
     if (prevQuery !== nextQuery) {
-      this.setState({ gallery: [], totalPages: 0 });
+      this.setState({ gallery: [], page: 1, totalPages: 0 });
 
       if (nextQuery) {
         this.setState({ status: 'pending' });
@@ -40,7 +40,7 @@ class ImageGallery extends Component {
       this.setState({ status: 'idle' });
     }
 
-    if (prevPage !== nextPage) {
+    if (prevPage !== nextPage && nextPage !== 1) {
       this.scrollToLoadedItems();
     }
   }
