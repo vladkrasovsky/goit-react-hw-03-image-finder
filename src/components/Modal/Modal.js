@@ -1,30 +1,48 @@
+import { Component } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import { Overlay, Box } from './Modal.styled';
+import { Overlay, Wrapper, Image } from './Modal.styled';
 
 const ModalRoot = document.querySelector('#modal-root');
 
-const Modal = ({ onClose, children }) => {
-  const handleOverlayClick = ({ target, currentTarget }) => {
+class Modal extends Component {
+  static propTypes = {
+    url: PropTypes.string.isRequired,
+    onClose: PropTypes.func.isRequired,
+  };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleEscKeydown);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleEscKeydown);
+  }
+
+  handleOverlayClick = ({ target, currentTarget }) => {
     if (target === currentTarget) {
-      onClose();
+      this.props.onClose();
     }
   };
 
-  return createPortal(
-    <Overlay onClick={handleOverlayClick}>
-      <Box>{children}</Box>
-    </Overlay>,
-    ModalRoot
-  );
-};
+  handleEscKeydown = ({ code }) => {
+    if (code === 'Escape') {
+      this.props.onClose();
+    }
+  };
 
-Modal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node,
-  ]).isRequired,
-};
+  render() {
+    const { url } = this.props;
+
+    return createPortal(
+      <Overlay onClick={this.handleOverlayClick}>
+        <Wrapper>
+          <Image src={url} alt="" />
+        </Wrapper>
+      </Overlay>,
+      ModalRoot
+    );
+  }
+}
 
 export default Modal;

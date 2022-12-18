@@ -4,6 +4,7 @@ import { Layout } from './Layout';
 import { GlobalStyle } from './GlobalStyle';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
+import Modal from './Modal';
 
 class App extends Component {
   state = {
@@ -96,33 +97,38 @@ class App extends Component {
           'https://cdn.pixabay.com/user/2012/03/08/00-13-48-597_250x250.jpg',
       },
     ],
+    activeImage: null,
   };
 
-  getQuery = query => this.setState({ query });
+  setQuery = query => this.setState({ query });
 
-  showModal = imageURL => {
-    console.log('show modal');
-    console.log(imageURL);
-  };
+  setActiveImageUrl = url => this.setState({ activeImage: url });
 
   render() {
-    const { images } = this.state;
+    const { images, activeImage } = this.state;
 
     return (
       <Layout>
         {/* 
-          <Searchbar>
-          <ImageGallery>
-          <ImageGalleryItem>
+          <Searchbar> ✅
+          <ImageGallery> ✅
+          <ImageGalleryItem> ✅
           <Loader>
           <Button>
-          <Modal>
+          <Modal> ✅
         */}
 
-        <Searchbar onSearch={this.getQuery} />
+        <Searchbar onSearch={this.setQuery} />
 
         {images.length > 0 && (
-          <ImageGallery images={images} onClick={this.showModal} />
+          <ImageGallery images={images} onClick={this.setActiveImageUrl} />
+        )}
+
+        {activeImage && (
+          <Modal
+            url={activeImage}
+            onClose={() => this.setActiveImageUrl(null)}
+          />
         )}
 
         <ToastContainer theme="colored" autoClose={3000} />

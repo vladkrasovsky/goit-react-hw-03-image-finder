@@ -13,14 +13,10 @@ export const Overlay = styled.div`
   z-index: 1200;
 `;
 
-export const Box = styled.div`
-  /* max-width: calc(100vw - 48px);
-  max-height: calc(100vh - 24px);
-  display: flex; */
+export const Wrapper = styled.div``;
 
-  > img {
-    max-width: calc(100vw - 48px);
-    max-height: calc(100vh - 24px);
-    user-select: none;
-  }
+export const Image = styled.img`
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 24px);
+  user-select: none;
 `;
